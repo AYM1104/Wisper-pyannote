@@ -20,6 +20,11 @@ def run_colab_mode():
         from google.colab import files, drive
         print("Colab環境を検出しました。Colabモードで実行します。")
         
+        # 環境変数でColabモードを無効化できるようにする
+        if os.getenv("COLAB_MODE") == "false":
+            print("Colabモードが無効化されています。通常モードで実行します。")
+            return None
+        
         # ファイルアップロード（エラーハンドリング付き）
         print("音声ファイルをアップロードしてください...")
         try:
@@ -28,6 +33,7 @@ def run_colab_mode():
             print(f"ファイルアップロードでエラーが発生しました: {e}")
             print("手動でファイルをアップロードして、ファイルパスを指定してください。")
             print("例: !python main.py --audio '/content/sample.m4a' --model large-v3 --do_diar")
+            print("または: os.environ['COLAB_MODE'] = 'false' を設定してから実行してください。")
             return 1
         
         if not uploaded:
