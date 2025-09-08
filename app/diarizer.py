@@ -36,8 +36,10 @@ def load_diarization_pipeline() -> Pipeline:
         use_auth_token=hf_token
     )
     
-    # CPUで安定動作するように設定（重要: 文字列"cpu"ではなくtorch.device("cpu")）
-    pipeline = pipeline.to(torch.device("cpu"))
+    # GPUが利用可能な場合はGPUを使用、そうでなければCPUを使用
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    pipeline = pipeline.to(device)
+    print(f"話者分離パイプラインを{device}に配置しました")
     
     print("話者分離パイプラインのロード完了")
     return pipeline
