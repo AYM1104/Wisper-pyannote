@@ -1,0 +1,27 @@
+name: Setup Token for Colab
+
+on:
+  workflow_dispatch:
+    inputs:
+      colab_url:
+        description: 'Colab URL'
+        required: true
+        default: 'https://colab.research.google.com'
+
+jobs:
+  setup-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Token
+        run: |
+          echo "🔐 トークンが設定されました"
+          echo ""
+          echo "📋 Colabで以下のコードを実行してください:"
+          echo ""
+          echo "import os"
+          echo "os.environ['HUGGINGFACE_TOKEN'] = '${{ secrets.HUGGINGFACE_TOKEN }}'"
+          echo ""
+          echo "✅ これで話者分離機能が使用可能になります"
+          echo ""
+          echo "🚀 実行例:"
+          echo "!python main.py --audio 'file.m4a' --model large-v3 --do_diar"

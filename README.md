@@ -47,11 +47,21 @@ if os.path.exists(srt_file):
     print(f"字幕ファイルをダウンロードしました: {base_name}.srt")
 ```
 
-### 方法1b: 話者分離付き（トークン設定が必要）
+### 方法1b: 話者分離付き（GitHub Secrets版）
+
+**🔐 共有トークンを使用して話者分離機能を利用できます**
+
+#### トークンの取得方法：
+1. [GitHub Actions](https://github.com/AYM1104/Wisper-pyannote/actions)にアクセス
+2. 「Setup Token for Colab」ワークフローを実行
+3. 表示されたトークンをコピー
+4. Colabで以下のコードを実行
+
+#### 実行コード：
 ```python
-# 1. Hugging Faceトークンの設定
+# 1. GitHub Actionsから取得したトークンを設定
 import os
-os.environ["HUGGINGFACE_TOKEN"] = "hf_your_token_here"
+os.environ["HUGGINGFACE_TOKEN"] = "GitHub Actionsから取得したトークン"
 
 # 2-5. 上記と同じ手順
 
@@ -70,6 +80,12 @@ if os.path.exists(srt_file):
 if os.path.exists(tsv_file):
     files.download(tsv_file)
     print(f"話者分離ファイルをダウンロードしました: {base_name}.diar.tsv")
+```
+
+### 方法1c: 自動セットアップ（推奨）
+```python
+# このファイルを実行するだけで自動セットアップ
+!python colab_with_github_secrets.py
 ```
 
 ### 方法2: 自動モード（エラーが発生する場合あり）

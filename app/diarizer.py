@@ -19,17 +19,13 @@ def load_diarization_pipeline() -> Pipeline:
     # Hugging Faceトークンを取得
     hf_token = os.getenv("HUGGINGFACE_TOKEN")
     
-    # デフォルトトークン（公開用）
     if not hf_token:
-        # 注意: 実際のトークンは環境変数で設定してください
-        hf_token = "hf_your_token_here"
-        print("⚠️  デフォルトトークンを使用しています。")
-        print("   話者分離を使用する場合は、HUGGINGFACE_TOKENを設定してください。")
-    
-    if hf_token == "hf_your_token_here":
         raise ValueError(
-            "Hugging Faceトークンが設定されていません。"
-            "環境変数 HUGGINGFACE_TOKEN を設定してください。"
+            "Hugging Faceトークンが設定されていません。\n"
+            "話者分離を使用する場合は、以下の手順でトークンを取得・設定してください：\n"
+            "1. https://huggingface.co/settings/tokens でトークンを取得\n"
+            "2. Colabで実行: os.environ['HUGGINGFACE_TOKEN'] = 'hf_your_token'\n"
+            "3. または、話者分離なしで実行: --do_diar フラグを外す"
         )
     
     print("話者分離パイプラインをロード中...")
