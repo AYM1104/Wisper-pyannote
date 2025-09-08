@@ -27,9 +27,11 @@ def transcribe(wav_path: str, model_size: str = "large-v3") -> Tuple[List[Any], 
     print(f"デバイス: {device}, コンピュートタイプ: {compute_type}")
     
     # Whisperモデルをロード
+    print("Whisperモデルをロード中...")
     model = WhisperModel(model_size, device=device, compute_type=compute_type)
     
     # 文字起こし実行
+    print("音声を解析中...")
     segments, info = model.transcribe(
         wav_path,
         language="ja",  # 日本語
@@ -40,9 +42,10 @@ def transcribe(wav_path: str, model_size: str = "large-v3") -> Tuple[List[Any], 
     )
     
     # セグメントをリストに変換
+    print("文字起こし結果を処理中...")
     segments_list = list(segments)
     
-    print(f"文字起こし完了: {len(segments_list)}セグメント")
+    print(f"✅ 文字起こし完了: {len(segments_list)}セグメント")
     print(f"検出言語: {info.language} (信頼度: {info.language_probability:.2f})")
     
     return segments_list, info

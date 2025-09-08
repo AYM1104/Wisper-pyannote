@@ -54,16 +54,33 @@ def diarize(wav_path: str) -> List[Tuple[float, float, str]]:
     pipeline = load_diarization_pipeline()
     
     print("話者分離を開始します...")
+    print("⚠️  警告メッセージは正常な動作です。処理は継続されます。")
     
-    # 話者分離を実行
-    diarization = pipeline(wav_path)
-    
-    # 結果をリストに変換
-    results = []
-    for turn, _, speaker in diarization.itertracks(yield_label=True):
-        results.append((turn.start, turn.end, speaker))
-    
-    print(f"話者分離完了: {len(results)}セグメント")
+    # 話者分離を実行（進捗表示付き）
+    try:
+        from tqdm import tqdm
+        print("音声ファイルを解析中...")
+        diarization = pipeline(wav_path)
+        
+        # 結果をリストに変換（進捗表示付き）
+        results = []
+        print("話者分離結果を処理中...")
+        
+        # セグメント数を事前に取得
+        segments = list(diarization.itertracks(yield_label=True))
+        
+        for turn, _, speaker in tqdm(segments, desc="話者分離処理"):
+            results.append((turn.start, turn.end, speaker))
+        
+        print(f"✅ 話者分離完了: {len(results)}セグメント")
+        
+    except ImportError:
+        # tqdmが利用できない場合は通常処理
+        diarization = pipeline(wav_path)
+        results = []
+        for turn, _, speaker in diarization.itertracks(yield_label=True):
+            results.append((turn.start, turn.end, speaker))
+        print(f"✅ 話者分離完了: {len(results)}セグメント")
     
     return results
 
