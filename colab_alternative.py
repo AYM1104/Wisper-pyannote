@@ -1,5 +1,5 @@
 """
-Colab用超簡単セットアップ
+Colab用代替セットアップ（ログアクセス問題の解決版）
 このコードをColabのセルにコピー&ペーストして実行してください
 """
 
@@ -9,13 +9,14 @@ Colab用超簡単セットアップ
 !pip install -r requirements.txt
 !pip install --upgrade torch torchaudio torchvision
 
-# 2. トークンを自動取得
+# 2. トークンを自動取得（代替方法）
 import requests
 import os
 import re
+import json
 
-def auto_get_token():
-    """GitHub Actionsからトークンを自動取得"""
+def auto_get_token_alternative():
+    """GitHub Actionsからトークンを自動取得（代替方法）"""
     print("🔐 GitHub Actionsからトークンを自動取得中...")
     
     try:
@@ -30,10 +31,11 @@ def auto_get_token():
             if runs.get("workflow_runs"):
                 latest_run = runs["workflow_runs"][0]
                 
+                print(f"📋 最新のワークフロー実行ID: {latest_run['id']}")
+                print(f"📋 実行時刻: {latest_run['created_at']}")
+                print(f"📋 ステータス: {latest_run['status']} - {latest_run['conclusion']}")
+                
                 if latest_run["status"] == "completed" and latest_run["conclusion"] == "success":
-                    print(f"📋 最新のワークフロー実行ID: {latest_run['id']}")
-                    print(f"📋 実行時刻: {latest_run['created_at']}")
-                    
                     # 方法2: ワークフローのログを取得
                     logs_url = f"https://api.github.com/repos/AYM1104/Wisper-pyannote/actions/runs/{latest_run['id']}/logs"
                     logs_response = requests.get(logs_url, headers=headers)
@@ -69,8 +71,9 @@ def auto_get_token():
                     
                     else:
                         print(f"⚠️  ログ取得エラー: {logs_response.status_code}")
+                        print("📋 ログアクセスに問題があります。手動設定に切り替えます。")
                 else:
-                    print(f"⚠️  最新のワークフローが完了していません: {latest_run['status']} - {latest_run['conclusion']}")
+                    print(f"⚠️  最新のワークフローが完了していません")
             else:
                 print("⚠️  ワークフローの実行履歴が見つかりません")
         else:
@@ -82,7 +85,7 @@ def auto_get_token():
     return False
 
 # トークンを自動取得
-token_set = auto_get_token()
+token_set = auto_get_token_alternative()
 
 # 3. ファイルをアップロード
 from google.colab import files
