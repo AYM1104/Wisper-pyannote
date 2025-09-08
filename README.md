@@ -12,31 +12,31 @@ Google Colabで動作する音声文字起こし（Whisper/faster-whisper）＋�
 
 ## Google Colabでの実行手順
 
-### 1. リポジトリのクローン
-```bash
-!git clone https://github.com/your-username/Wisper.git
-%cd Wisper
-```
-
-### 2. 依存関係のインストール
-```bash
-!pip install -r requirements.txt
-!pip install --upgrade torch torchaudio torchvision
-```
-
-### 3. Hugging Faceトークンの設定（話者分離を使用する場合）
+### 簡単な方法（推奨）
 ```python
+# 1. Hugging Faceトークンの設定
 import os
 os.environ["HUGGINGFACE_TOKEN"] = "hf_your_token_here"
+
+# 2. リポジトリのクローン
+!git clone https://github.com/AYM1104/Wisper-pyannote.git
+%cd Wisper-pyannote
+
+# 3. 依存関係のインストール
+!pip install -r requirements.txt
+!pip install --upgrade torch torchaudio torchvision
+
+# 4. 実行（自動でファイルアップロードとダウンロード）
+!python main.py
 ```
 
-### 4. 実行
+### 手動でファイルパスを指定する方法
 ```bash
 # 文字起こしのみ
-!python main.py --audio "/content/drive/MyDrive/audio/sample.m4a" --model large-v3
+!python main.py --audio "/content/sample.m4a" --model large-v3
 
 # 文字起こし＋話者分離
-!python main.py --audio "/content/drive/MyDrive/audio/sample.m4a" --model large-v3 --do_diar
+!python main.py --audio "/content/sample.m4a" --model large-v3 --do_diar
 ```
 
 ## 引数
