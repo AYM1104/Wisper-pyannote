@@ -12,6 +12,16 @@ jobs:
   setup-token:
     runs-on: ubuntu-latest
     steps:
+      - name: Check Secrets
+        run: |
+          if [ -z "${{ secrets.HUGGINGFACE_TOKEN }}" ]; then
+            echo "❌ HUGGINGFACE_TOKEN が設定されていません"
+            echo "リポジトリの Settings > Secrets and variables > Actions で設定してください"
+            exit 1
+          else
+            echo "✅ HUGGINGFACE_TOKEN が設定されています"
+          fi
+      
       - name: Setup Token
         run: |
           echo "🔐 トークンが設定されました"
@@ -25,3 +35,5 @@ jobs:
           echo ""
           echo "🚀 実行例:"
           echo "!python main.py --audio 'file.m4a' --model large-v3 --do_diar"
+          echo ""
+          echo "📝 注意: このトークンは共有用です。個人のトークンではありません。"
