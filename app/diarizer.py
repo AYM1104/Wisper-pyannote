@@ -59,26 +59,65 @@ def diarize(wav_path: str) -> List[Tuple[float, float, str]]:
     print("話者分離を開始します...")
     print("⚠️  警告メッセージは正常な動作です。処理は継続されます。")
     
+    # 音声ファイルの情報を取得
+    try:
+        import torchaudio
+        info = torchaudio.info(wav_path)
+        duration = info.num_frames / info.sample_rate
+        print(f"📊 音声ファイル情報:")
+        print(f"   - ファイル: {wav_path}")
+        print(f"   - 長さ: {duration:.1f}秒 ({duration/60:.1f}分)")
+        print(f"   - サンプルレート: {info.sample_rate}Hz")
+        print(f"   - チャンネル数: {info.num_channels}")
+    except Exception as e:
+        print(f"⚠️ 音声ファイル情報の取得に失敗: {e}")
+    
     # 話者分離を実行（進捗表示付き）
     try:
         from tqdm import tqdm
-        print("音声ファイルを解析中...")
-        diarization = pipeline(wav_path)
+        import time
         
-        # 結果をリストに変換（進捗表示付き）
-        results = []
-        print("話者分離結果を処理中...")
+        print("\n🔄 音声ファイルを解析中...")
+        print("   (この処理には時間がかかります。しばらくお待ちください)")
         
-        # セグメント数を事前に取得
-        segments = list(diarization.itertracks(yield_label=True))
+        start_time = time.time()
         
-        for turn, _, speaker in tqdm(segments, desc="話者分離処理"):
-            results.append((turn.start, turn.end, speaker))
+        # 進捗バー付きで話者分離を実行
+        with tqdm(total=100, desc="話者分離処理", unit="%") as pbar:
+            # パイプライン実行（進捗をシミュレート）
+            pbar.set_description("音声を解析中...")
+            pbar.update(20)
+            
+            diarization = pipeline(wav_path)
+            
+            pbar.set_description("話者を識別中...")
+            pbar.update(30)
+            
+            # 結果をリストに変換
+            results = []
+            segments = list(diarization.itertracks(yield_label=True))
+            
+            pbar.set_description("結果を処理中...")
+            pbar.update(20)
+            
+            for i, (turn, _, speaker) in enumerate(segments):
+                results.append((turn.start, turn.end, speaker))
+                # 進捗を更新
+                if i % max(1, len(segments) // 10) == 0:
+                    pbar.update(30 / max(1, len(segments) // 10))
+            
+            pbar.set_description("完了")
+            pbar.update(100 - pbar.n)
         
-        print(f"✅ 話者分離完了: {len(results)}セグメント")
+        elapsed_time = time.time() - start_time
+        print(f"\n✅ 話者分離完了!")
+        print(f"   - 処理時間: {elapsed_time:.1f}秒")
+        print(f"   - セグメント数: {len(results)}")
+        print(f"   - 話者数: {len(set(speaker for _, _, speaker in results))}")
         
     except ImportError:
         # tqdmが利用できない場合は通常処理
+        print("音声ファイルを解析中...")
         diarization = pipeline(wav_path)
         results = []
         for turn, _, speaker in diarization.itertracks(yield_label=True):
