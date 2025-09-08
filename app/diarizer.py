@@ -19,7 +19,14 @@ def load_diarization_pipeline() -> Pipeline:
     # Hugging Faceトークンを取得
     hf_token = os.getenv("HUGGINGFACE_TOKEN")
     
+    # デフォルトトークン（公開用）
     if not hf_token:
+        # 注意: 実際のトークンは環境変数で設定してください
+        hf_token = "hf_your_token_here"
+        print("⚠️  デフォルトトークンを使用しています。")
+        print("   話者分離を使用する場合は、HUGGINGFACE_TOKENを設定してください。")
+    
+    if hf_token == "hf_your_token_here":
         raise ValueError(
             "Hugging Faceトークンが設定されていません。"
             "環境変数 HUGGINGFACE_TOKEN を設定してください。"

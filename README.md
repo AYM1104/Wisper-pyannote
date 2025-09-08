@@ -14,9 +14,10 @@ Google Colabで動作する音声文字起こし（Whisper/faster-whisper）＋�
 
 ### 方法1: 手動アップロード（推奨）
 ```python
-# 1. Hugging Faceトークンの設定
+# 1. Hugging Faceトークンの設定（話者分離を使用する場合のみ）
 import os
-os.environ["HUGGINGFACE_TOKEN"] = "hf_your_token_here"
+# 以下の行のコメントを外して、あなたのトークンを設定してください
+# os.environ["HUGGINGFACE_TOKEN"] = "hf_your_token_here"
 
 # 2. リポジトリのクローン
 !git clone https://github.com/AYM1104/Wisper-pyannote.git
@@ -34,13 +35,33 @@ uploaded = files.upload()
 audio_file = list(uploaded.keys())[0]
 print(f"アップロードしたファイル: {audio_file}")
 
-# 6. 実行
-!python main.py --audio "/content/{audio_file}" --model large-v3 --do_diar
+# 6. 実行（話者分離なし）
+!python main.py --audio "/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{audio_file}" --model large-v3
 
 # 7. 生成されたファイルをダウンロード
 base_name = audio_file.split('.')[0]
-srt_file = f"/content/{base_name}.srt"
-tsv_file = f"/content/{base_name}.diar.tsv"
+srt_file = f"/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{base_name}.srt"
+
+if os.path.exists(srt_file):
+    files.download(srt_file)
+    print(f"字幕ファイルをダウンロードしました: {base_name}.srt")
+```
+
+### 方法1b: 話者分離付き（トークン設定が必要）
+```python
+# 1. Hugging Faceトークンの設定
+import os
+os.environ["HUGGINGFACE_TOKEN"] = "hf_your_token_here"
+
+# 2-5. 上記と同じ手順
+
+# 6. 実行（話者分離付き）
+!python main.py --audio "/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{audio_file}" --model large-v3 --do_diar
+
+# 7. 生成されたファイルをダウンロード
+base_name = audio_file.split('.')[0]
+srt_file = f"/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{base_name}.srt"
+tsv_file = f"/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{base_name}.diar.tsv"
 
 if os.path.exists(srt_file):
     files.download(srt_file)
