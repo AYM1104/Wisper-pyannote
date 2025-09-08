@@ -20,9 +20,15 @@ def run_colab_mode():
         from google.colab import files, drive
         print("Colab環境を検出しました。Colabモードで実行します。")
         
-        # ファイルアップロード
+        # ファイルアップロード（エラーハンドリング付き）
         print("音声ファイルをアップロードしてください...")
-        uploaded = files.upload()
+        try:
+            uploaded = files.upload()
+        except Exception as e:
+            print(f"ファイルアップロードでエラーが発生しました: {e}")
+            print("手動でファイルをアップロードして、ファイルパスを指定してください。")
+            print("例: !python main.py --audio '/content/sample.m4a' --model large-v3 --do_diar")
+            return 1
         
         if not uploaded:
             print("エラー: ファイルがアップロードされませんでした。")
@@ -43,13 +49,19 @@ def run_colab_mode():
             srt_file = f"/content/{base_name}.srt"
             tsv_file = f"/content/{base_name}.diar.tsv"
             
-            if os.path.exists(srt_file):
-                files.download(srt_file)
-                print(f"字幕ファイルをダウンロードしました: {base_name}.srt")
-            
-            if os.path.exists(tsv_file):
-                files.download(tsv_file)
-                print(f"話者分離ファイルをダウンロードしました: {base_name}.diar.tsv")
+            try:
+                if os.path.exists(srt_file):
+                    files.download(srt_file)
+                    print(f"字幕ファイルをダウンロードしました: {base_name}.srt")
+                
+                if os.path.exists(tsv_file):
+                    files.download(tsv_file)
+                    print(f"話者分離ファイルをダウンロードしました: {base_name}.diar.tsv")
+            except Exception as e:
+                print(f"ファイルダウンロードでエラーが発生しました: {e}")
+                print("生成されたファイル:")
+                print(f"  - 字幕: {srt_file}")
+                print(f"  - 話者分離: {tsv_file}")
         
         return result
         
