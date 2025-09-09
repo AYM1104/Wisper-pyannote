@@ -12,6 +12,7 @@ from pathlib import Path
 from app.utils_audio import to_wav_mono16k
 from app.transcriber import transcribe, segments_to_srt
 from app.diarizer import diarize, diarization_to_tsv
+from app.text_converter import save_text_files
 
 
 def run_colab_mode():
@@ -127,11 +128,25 @@ def process_audio(audio_path: str, model: str, do_diar: bool) -> int:
                 
                 print(f"話者分離ファイルを保存しました: {tsv_path}")
         
+        # 4. テキストファイルを生成
+        print("\nステップ4: テキストファイル生成")
+        base_name = audio_path.stem
+        saved_text_files = []
+        
+        # SRTからテキストファイルを生成
+        saved_text_files.extend(save_text_files(base_name, srt_content=srt_content))
+        
+        # TSVからテキストファイルを生成（話者分離が有効な場合）
+        if do_diar and os.getenv("HUGGINGFACE_TOKEN"):
+            saved_text_files.extend(save_text_files(base_name, tsv_content=tsv_content))
+        
         print("\n処理完了!")
         print(f"生成ファイル:")
         print(f"  - 字幕: {srt_path}")
         if do_diar and os.getenv("HUGGINGFACE_TOKEN"):
             print(f"  - 話者分離: {tsv_path}")
+        for text_file in saved_text_files:
+            print(f"  - テキスト: {text_file}")
         
         return 0
         
