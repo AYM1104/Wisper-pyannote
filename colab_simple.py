@@ -1,112 +1,61 @@
 """
-Colab用超簡単セットアップ
+Colab用超簡単セットアップ（文字起こしのみ）
 このコードをColabのセルにコピー&ペーストして実行してください
 """
 
 # 1. セットアップ
+import os
+os.environ['COLAB_MODE'] = 'false'
+
+print("🚀 Wisper-pyannote セットアップ開始...")
 !git clone https://github.com/AYM1104/Wisper-pyannote.git
 %cd Wisper-pyannote
 !pip install -r requirements.txt
 !pip install --upgrade torch torchaudio torchvision
+print("✅ セットアップ完了")
 
-# 2. トークンを自動取得
-import requests
-import os
-import re
-
-def auto_get_token():
-    """GitHub Actionsからトークンを自動取得"""
-    print("🔐 GitHub Actionsからトークンを自動取得中...")
-    
-    try:
-        # 方法1: GitHub Actions APIから最新のワークフロー実行を取得
-        url = "https://api.github.com/repos/AYM1104/Wisper-pyannote/actions/workflows/setup_token.yml/runs"
-        headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "Wisper-Colab-Setup"}
-        
-        response = requests.get(url, headers=headers)
-        
-        if response.status_code == 200:
-            runs = response.json()
-            if runs.get("workflow_runs"):
-                latest_run = runs["workflow_runs"][0]
-                
-                if latest_run["status"] == "completed" and latest_run["conclusion"] == "success":
-                    print(f"📋 最新のワークフロー実行ID: {latest_run['id']}")
-                    print(f"📋 実行時刻: {latest_run['created_at']}")
-                    
-                    # 方法2: ワークフローのログを取得
-                    logs_url = f"https://api.github.com/repos/AYM1104/Wisper-pyannote/actions/runs/{latest_run['id']}/logs"
-                    logs_response = requests.get(logs_url, headers=headers)
-                    
-                    if logs_response.status_code == 200:
-                        logs = logs_response.text
-                        print(f"📋 ログサイズ: {len(logs)} 文字")
-                        
-                        # 複数のパターンでトークンを検索
-                        patterns = [
-                            r"os\.environ\['HUGGINGFACE_TOKEN'\] = '([^']+)'",
-                            r"HUGGINGFACE_TOKEN.*?=.*?'([^']+)'",
-                            r"hf_[a-zA-Z0-9_]+",
-                            r"'hf_[^']+'"
-                        ]
-                        
-                        for pattern in patterns:
-                            matches = re.findall(pattern, logs)
-                            for match in matches:
-                                if isinstance(match, str) and match.startswith("hf_"):
-                                    os.environ["HUGGINGFACE_TOKEN"] = match
-                                    print("✅ トークンを自動取得しました")
-                                    return True
-                        
-                        # デバッグ用: ログの一部を表示
-                        print("📋 ログの一部:")
-                        lines = logs.split('\n')
-                        for i, line in enumerate(lines):
-                            if "HUGGINGFACE_TOKEN" in line or "hf_" in line:
-                                print(f"  {i}: {line}")
-                                if i > 10:  # 最初の10行だけ表示
-                                    break
-                    
-                    else:
-                        print(f"⚠️  ログ取得エラー: {logs_response.status_code}")
-                else:
-                    print(f"⚠️  最新のワークフローが完了していません: {latest_run['status']} - {latest_run['conclusion']}")
-            else:
-                print("⚠️  ワークフローの実行履歴が見つかりません")
-        else:
-            print(f"⚠️  GitHub APIエラー: {response.status_code}")
-            
-    except Exception as e:
-        print(f"⚠️  自動取得に失敗しました: {e}")
-    
-    return False
-
-# トークンを自動取得
-token_set = auto_get_token()
-
-# 3. ファイルをアップロード
+# 2. ファイルをアップロード
+print("\n📁 音声ファイルをアップロードしてください...")
 from google.colab import files
 uploaded = files.upload()
 audio_file = list(uploaded.keys())[0]
-print(f"アップロードしたファイル: {audio_file}")
+print(f"✅ アップロード完了: {audio_file}")
 
-# 4. 実行
-if token_set:
-    print("🚀 話者分離付きで実行します...")
-    !python main.py --audio "/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{audio_file}" --model large-v3 --do_diar
-else:
-    print("🚀 話者分離なしで実行します...")
-    !python main.py --audio "/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{audio_file}" --model large-v3
+# 3. 文字起こし実行
+print(f"\n🎤 文字起こしを開始します...")
+print(f"ファイル: {audio_file}")
+print(f"モデル: large-v3")
+print(f"出力: テキストのみ（タイムスタンプなし）")
 
-# 5. 結果をダウンロード
+!python main.py --audio "/content/{audio_file}" --model large-v3
+
+# 4. テキスト抽出（進捗バー付き）
+from tqdm import tqdm
+print(f"\n📝 テキストを抽出中...")
 base_name = audio_file.split('.')[0]
-srt_file = f"/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{base_name}.srt"
-tsv_file = f"/content/Wisper-pyannote/Wisper-pyannote/Wisper-pyannote/{base_name}.diar.tsv"
+srt_path = f"/content/Wisper-pyannote/{base_name}.srt"
 
-if os.path.exists(srt_file):
-    files.download(srt_file)
-    print(f"✅ 字幕ファイルをダウンロードしました: {base_name}.srt")
+with open(srt_path, 'r', encoding='utf-8') as f:
+    srt_content = f.read()
 
-if os.path.exists(tsv_file):
-    files.download(tsv_file)
-    print(f"✅ 話者分離ファイルをダウンロードしました: {base_name}.diar.tsv")
+lines = srt_content.strip().split('\n')
+text_lines = []
+
+print("テキスト行を抽出中...")
+for i, line in enumerate(tqdm(lines, desc="テキスト抽出")):
+    line = line.strip()
+    if line.isdigit() or '-->' in line or not line:
+        continue
+    text_lines.append(line)
+
+text_content = '\n'.join(text_lines)
+text_file = f"/content/Wisper-pyannote/{base_name}.txt"
+with open(text_file, 'w', encoding='utf-8') as f:
+    f.write(text_content)
+
+print(f"✅ テキスト抽出完了: {len(text_lines)}行")
+
+# 5. ダウンロード
+print(f"\n📥 ファイルをダウンロード中...")
+files.download(text_file)
+print("✅ テキストファイルをダウンロードしました")
